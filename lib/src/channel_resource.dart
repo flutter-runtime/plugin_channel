@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:plugin_channel/src/channel_identifier.dart';
 
 /// 负责管理通道的资源
-class ChanelResource {
+class ChannelResource {
   /// 通过 [ChannelIdentifier] 构造一个
   /// [channelIdentifier] ChannelIdentifier
-  ChanelResource(this.channelIdentifier);
+  ChannelResource(this.channelIdentifier);
 
   /// 通过一个通道ID构造
   /// [channelIdentifier] 通道的唯一ID
-  ChanelResource.fromIdentifier(String channelIdentifier)
+  ChannelResource.fromIdentifier(String channelIdentifier)
       : channelIdentifier = ChannelIdentifier(channelIdentifier);
 
   /// 通道标识符
