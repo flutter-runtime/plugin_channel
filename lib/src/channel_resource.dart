@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:darty_json_safe/darty_json.dart';
+import 'package:darty_json_safe/darty_json_safe.dart';
 import 'package:plugin_channel/plugin_channel.dart';
 import 'package:plugin_channel/src/channel_identifier.dart';
 
