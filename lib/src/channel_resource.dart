@@ -154,13 +154,20 @@ class ChannelResponse {
   final String message;
   final bool success;
   final dynamic data;
+  final Map<String, String> environment;
 
-  ChannelResponse.success([this.data, this.message = ''])
-      : code = 0,
+  ChannelResponse.success([
+    this.data,
+    this.message = '',
+    this.environment = const {},
+  ])  : code = 0,
         success = true;
 
-  ChannelResponse.failure(this.message, [this.code = 1])
-      : success = false,
+  ChannelResponse.failure(
+    this.message, [
+    this.code = 1,
+    this.environment = const {},
+  ])  : success = false,
         data = null;
 
   factory ChannelResponse.fromJson(Map<String, dynamic> json) {
@@ -168,10 +175,13 @@ class ChannelResponse {
     final message = JSON(json)['message'].stringValue;
     final code = JSON(json)['code'].intValue;
     final data = json['data'];
+    final environment = JSON(json)['environment'].mapValue.map((key, value) {
+      return MapEntry(key.toString(), value.toString());
+    });
     if (success) {
-      return ChannelResponse.success(data, message);
+      return ChannelResponse.success(data, message, environment);
     } else {
-      return ChannelResponse.failure(message, code);
+      return ChannelResponse.failure(message, code, environment);
     }
   }
 
