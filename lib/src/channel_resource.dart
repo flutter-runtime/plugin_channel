@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart';
+import 'package:darty_json_safe/darty_json_safe.dart';
+import 'package:plugin_channel/plugin_channel.dart';
 import 'package:plugin_channel/src/channel_identifier.dart';
 
 /// 负责管理通道的资源
@@ -38,46 +40,49 @@ class ChannelResource {
 
   /// 保存请求资源
   /// [resource] 资源
-  Future<void> saveRequestResource<T>(T resource) async {
+  Future<void> saveRequestResource(ChannelResponse resource) async {
     await _saveResourceInFile(resource, File(_requestResourceFilePath));
   }
 
   /// 保存返回资源
   /// [resources] 资源
-  Future<void> saveResponseResource<T>(T resources) async {
+  Future<void> saveResponseResource(ChannelResponse resources) async {
     await _saveResourceInFile(resources, File(_responseResourceFilePath));
   }
 
-  Future<void> _saveResourceInFile<T>(T resource, File file) async {
+  Future<void> _saveResourceInFile(ChannelResponse resource, File file) async {
     await _setup();
     if (await file.exists()) {
       throw '${file.path} already exists';
     }
-    final jsonText = JsonEncoder.withIndent(' ').convert(resource);
+    final jsonText = JsonEncoder.withIndent(' ').convert(resource.toJson());
     await file.writeAsString(jsonText);
   }
 
   /// 读取请求资源
-  Future<T> readRequestResource<T>() async {
+  Future<ChannelResponse> readRequestResource() async {
     return _readResource(File(_requestResourceFilePath));
   }
 
   /// 读取返回资源
-  Future<T> readResponseResource<T>() async {
+  Future<ChannelResponse> readResponseResource() async {
     return _readResource(File(_responseResourceFilePath));
   }
 
-  Future<T> _readResource<T>(File file) async {
+  Future<ChannelResponse> _readResource(File file) async {
     await _setup();
     if (!await file.exists()) {
       throw '${file.path} does not exist';
     }
     final jsonText = await file.readAsString();
-    final json = jsonDecode(jsonText);
-    if (json is! T) {
-      throw '${json.runtimeType.toString()} not a ${T.runtimeType.toString()}';
+    var json = jsonDecode(jsonText);
+    if (json is! Map) {
+      throw '${file.path} 必需是一个 Map JSON';
     }
-    return json;
+    final jsonObject = json.map((key, value) {
+      return MapEntry<String, dynamic>(key.toString(), value);
+    });
+    return ChannelResponse.fromJson(jsonObject);
   }
 
   /// 删除请求资源
@@ -117,4 +122,53 @@ class ChannelResource {
 
   String get _responseResourceFilePath =>
       join(_responseResourcePath, channelIdentifier.identifier + '.json');
+}
+
+class ChannelResponse {
+  final int code;
+  final String message;
+  final bool success;
+  final dynamic data;
+  final Map<String, String> environment;
+
+  ChannelResponse.success([
+    this.data,
+    this.message = '',
+    this.environment = const {},
+  ])  : code = 0,
+        success = true;
+
+  ChannelResponse.failure(
+    this.message, [
+    this.code = 1,
+    this.environment = const {},
+  ])  : success = false,
+        data = null;
+
+  factory ChannelResponse.fromJson(Map<String, dynamic> json) {
+    final success = JSON(json)['success'].boolValue;
+    final message = JSON(json)['message'].stringValue;
+    final code = JSON(json)['code'].intValue;
+    final data = json['data'];
+    final environment = JSON(json)['environment'].mapValue.map((key, value) {
+      return MapEntry(key.toString(), value.toString());
+    });
+    if (success) {
+      return ChannelResponse.success(data, message, environment);
+    } else {
+      return ChannelResponse.failure(message, code, environment);
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = {
+      'code': code,
+      'message': message,
+      'success': success,
+    };
+    if (data != null) {
+      map['data'] = data;
+    }
+    return map;
+  }
 }

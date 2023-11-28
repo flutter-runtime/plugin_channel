@@ -12,3 +12,4 @@ dev_dependencies:
 dependencies:
   crypto: ^3.0.2
   path: ^1.8.0
+  darty_json_safe: ^1.0.3
