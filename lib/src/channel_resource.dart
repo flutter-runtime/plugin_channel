@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:path/path.dart';
 import 'package:plugin_channel/src/channel_identifier.dart';
 
 /// 负责管理通道的资源
@@ -101,45 +102,19 @@ class ChannelResource {
     return await File(_responseResourceFilePath).exists();
   }
 
-  String get _homePath {
-    final home = Platform.environment['HOME'];
-    if (home == null) {
-      throw 'PWD does not exist';
-    }
-    return home;
-  }
+  String get _homePath => Platform.environment['HOME']!;
 
-  String get _cachePath {
-    return _homePath +
-        Platform.pathSeparator +
-        'Library' +
-        Platform.pathSeparator +
-        'Caches';
-  }
+  String get _cachePath => join(_homePath, 'Library', 'Caches');
 
-  String get _idePluginChannelPath {
-    return _cachePath + Platform.pathSeparator + 'ide_plugin_channel';
-  }
+  String get _idePluginChannelPath => join(_cachePath, 'ide_plugin_channel');
 
-  String get _requestResourcePath {
-    return _idePluginChannelPath + Platform.pathSeparator + 'request';
-  }
+  String get _requestResourcePath => join(_idePluginChannelPath, 'request');
 
-  String get _responseResourcePath {
-    return _idePluginChannelPath + Platform.pathSeparator + 'response';
-  }
+  String get _responseResourcePath => join(_idePluginChannelPath, 'response');
 
-  String get _requestResourceFilePath {
-    return _requestResourcePath +
-        Platform.pathSeparator +
-        channelIdentifier.identifier +
-        '.json';
-  }
+  String get _requestResourceFilePath =>
+      join(_requestResourcePath, channelIdentifier.identifier + '.json');
 
-  String get _responseResourceFilePath {
-    return _responseResourcePath +
-        Platform.pathSeparator +
-        channelIdentifier.identifier +
-        '.json';
-  }
+  String get _responseResourceFilePath =>
+      join(_responseResourcePath, channelIdentifier.identifier + '.json');
 }
