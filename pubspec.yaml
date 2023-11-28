@@ -1,7 +1,7 @@
 name: plugin_channel
 description: 负责 IDE 和插件的数据交互.
 version: 1.0.0
-# homepage: https://www.example.com
+homepage: https://github.com/flutter-runtime/plugin_channel
 
 environment:
   sdk: ">=2.16.2 <4.0.0"
